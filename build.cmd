@@ -1,1 +1,2 @@
-gcc -g *.c -lpthread -lws2_32
+gcc -g -c *.c
+gcc *.o --shared -lpthread -lws2_32 -o goat-web.dll
