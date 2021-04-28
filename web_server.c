@@ -20,17 +20,19 @@ with Goat standard library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+#define MG_ENABLE_CALLBACK_USERDATA 1
+
 #include "goat_data.h"
 #include "mongoose.h"
 #include <memory.h>
 
 static struct mg_serve_http_opts s_http_server_opts;
 
-static void ev_handler(struct mg_connection *nc, int ev, void *p)
+static void event_handler(struct mg_connection *connection, int event, void *event_data, void *user_data)
 {
-    if (ev == MG_EV_HTTP_REQUEST)
+    if (event == MG_EV_HTTP_REQUEST)
 	{
-        mg_serve_http(nc, (struct http_message *) p, s_http_server_opts);
+        mg_serve_http(connection, (struct http_message *) event_data, s_http_server_opts);
     }
 }
 
@@ -58,7 +60,7 @@ goat_value * create_server(const goat_shell *shell, const goat_allocator *alloca
     web_server_data *data = calloc(1, sizeof(web_server_data));
     mg_mgr_init(&data->manager, NULL);
     printf("Starting web server on port %ld\n", port);
-    data->connection = mg_bind(&data->manager, port_str, ev_handler);
+    data->connection = mg_bind(&data->manager, port_str, event_handler, data);
     if (data->connection == NULL)
 	{
         printf("Failed to create listener\n");
