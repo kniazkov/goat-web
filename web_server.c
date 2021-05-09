@@ -41,12 +41,19 @@ typedef struct
 static void event_handler(struct mg_connection *connection, int event, void *event_data, void *user_data)
 {
     web_server_data *me = (web_server_data*)user_data;
-    //assert(me != NULL);
+    assert(me != NULL);
     if (event == MG_EV_HTTP_REQUEST)
 	{
-        if (me != NULL)
-            call_goat_function(me->function_caller, &me->callback, me->allocator, 0, NULL);
-        mg_serve_http(connection, (struct http_message *) event_data, s_http_server_opts);
+        struct http_message *http_data = (struct http_message *)event_data;
+        goat_object *obj = create_goat_object(me->allocator);
+        goat_object_add_record(me->allocator, obj, L"uri", 
+            create_goat_string_from_c_string_ext(me->allocator, http_data->uri.p, http_data->uri.len));
+        goat_value * args[] = 
+        {
+            (goat_value*)obj
+        };
+        call_goat_function(me->function_caller, &me->callback, me->allocator, 1, args);
+        mg_serve_http(connection, http_data, s_http_server_opts);
     }
 }
 
