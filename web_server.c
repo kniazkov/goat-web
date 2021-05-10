@@ -26,6 +26,7 @@ with Goat standard library.  If not, see <http://www.gnu.org/licenses/>.
 #include "mongoose.h"
 #include <memory.h>
 #include <assert.h>
+#include <ctype.h>
 
 static struct mg_serve_http_opts s_http_server_opts;
 
@@ -44,16 +45,29 @@ static void event_handler(struct mg_connection *connection, int event, void *eve
     assert(me != NULL);
     if (event == MG_EV_HTTP_REQUEST)
 	{
+        size_t i;
         struct http_message *http_data = (struct http_message *)event_data;
         goat_object *obj = create_goat_object(me->allocator);
-        goat_object_add_record(me->allocator, obj, L"uri", 
+        goat_object_add_record(me->allocator, obj, L"uri",
             create_goat_string_from_c_string_ext(me->allocator, http_data->uri.p, http_data->uri.len));
+        wchar_t method[16];
+        for (i = 0; i < http_data->method.len; i++)
+            method[i] = (wchar_t)tolower(http_data->method.p[i]);
+        goat_object_add_record(me->allocator, obj, L"method",
+            create_goat_string_ext(me->allocator, method, http_data->method.len));
+        goat_object_add_record(me->allocator, obj, L"query",
+            create_goat_string_from_c_string_ext(me->allocator, http_data->query_string.p, http_data->query_string.len));
         goat_value * args[] = 
         {
             (goat_value*)obj
         };
         call_goat_function(me->function_caller, &me->callback, me->allocator, 1, args);
-        mg_serve_http(connection, http_data, s_http_server_opts);
+        mg_printf(connection, "HTTP/1.1 200 OK\r\n");
+        mg_printf(connection, "Content-Type: text/html\r\n");
+        mg_printf(connection, "Content-Length: %d\r\n", 8);
+        mg_printf(connection, "\r\n");
+        mg_printf(connection, "Hello :)");
+        //mg_serve_http(connection, http_data, s_http_server_opts);
     }
 }
 
