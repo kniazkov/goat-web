@@ -61,13 +61,24 @@ static void event_handler(struct mg_connection *connection, int event, void *eve
         {
             (goat_value*)obj
         };
-        call_goat_function(me->function_caller, &me->callback, me->allocator, 1, args);
-        mg_printf(connection, "HTTP/1.1 200 OK\r\n");
-        mg_printf(connection, "Content-Type: text/html\r\n");
-        mg_printf(connection, "Content-Length: %d\r\n", 8);
-        mg_printf(connection, "\r\n");
-        mg_printf(connection, "Hello :)");
-        //mg_serve_http(connection, http_data, s_http_server_opts);
+        goat_value *response = call_goat_function(me->function_caller, &me->callback, me->allocator, 1, args);
+        if (response->type == goat_type_null)
+        {
+            mg_serve_http(connection, http_data, s_http_server_opts);
+        }
+        else
+        {
+            assert(response->type == goat_type_byte_array);
+            goat_byte_array *array = (goat_byte_array*)response;
+            mg_printf(connection, "HTTP/1.1 200 OK\r\n");
+            mg_printf(connection, "Content-Type: text/html, charset=utf-8\r\n");
+            mg_printf(connection, "Content-Length: %d\r\n", array->length);
+            mg_printf(connection, "\r\n");
+            for (size_t i = 0; i < array->length; i++)
+            {
+                mg_printf(connection, "%c", array->data[i]);
+            }
+        }
     }
 }
 
