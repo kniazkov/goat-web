@@ -1,0 +1,17 @@
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<script src="lib.js"></script>
+	</head>
+	<body>
+		<p id="label"></p>
+		<script>
+			setInterval(function() {
+				var label = document.getElementById("label");
+				sendRequest("test", function(response) {
+					label.innerHTML = response;
+				});
+			}, 1);
+		</script>
+	</body>
+</html>

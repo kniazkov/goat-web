@@ -68,16 +68,37 @@ static void event_handler(struct mg_connection *connection, int event, void *eve
         }
         else
         {
-            assert(response->type == goat_type_byte_array);
-            goat_byte_array *array = (goat_byte_array*)response;
-            mg_printf(connection, "HTTP/1.1 200 OK\r\n");
-            mg_printf(connection, "Content-Type: text/html, charset=utf-8\r\n");
-            mg_printf(connection, "Content-Length: %d\r\n", array->length);
-            mg_printf(connection, "\r\n");
-            for (size_t i = 0; i < array->length; i++)
+            size_t i;
+            assert(response->type == goat_type_object);
+            goat_byte_array *content;
+            goat_string *content_type;
+            goat_object *obj = (goat_object*)response;
+            goat_object_record *rec = obj->first;
+            while (rec)
             {
-                mg_printf(connection, "%c", array->data[i]);
+                if (0 == wcscmp(rec->key, L"content"))
+                {
+                    assert(rec->value->type == goat_type_byte_array);
+                    content = (goat_byte_array*)rec->value;
+                }
+                else if (0 == wcscmp(rec->key, L"type"))
+                {
+                    assert(rec->value->type == goat_type_string);
+                    content_type = (goat_string*)rec->value;
+                }
+                rec = rec->next;
             }
+            assert(content != NULL);
+            assert(content_type != NULL);
+            mg_printf(connection, "HTTP/1.1 200 OK\r\n");
+            mg_printf(connection, "Access-Control-Allow-Origin: *\r\n");
+            mg_printf(connection, "Content-Type: ");
+            for (i = 0; i < content_type->value_length; i++)
+            {
+                mg_printf(connection, "%c", (char)content_type->value[i]);
+            }
+            mg_printf(connection, "\r\nContent-Length: %d\r\n\r\n", content->length);
+            mg_printf(connection, "%s", (const char*)content->data);
         }
     }
 }
