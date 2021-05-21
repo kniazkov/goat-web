@@ -66,7 +66,7 @@ static void event_handler(struct mg_connection *connection, int event, void *eve
         {
             mg_serve_http(connection, http_data, s_http_server_opts);
         }
-        else if (response->type == goat_type_object)
+        else
         {
             size_t i;
             assert(response->type == goat_type_object);
@@ -99,11 +99,6 @@ static void event_handler(struct mg_connection *connection, int event, void *eve
             }
             mg_printf(connection, "\r\nContent-Length: %d\r\n\r\n", content->length);
             mg_printf(connection, "%s", (const char*)content->data);
-        }
-        else
-        {
-            printf("response type %d\n", response->type);
-            fflush(stdout);
         }
     }
 }
