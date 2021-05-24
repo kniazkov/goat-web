@@ -47,18 +47,69 @@ static void event_handler(struct mg_connection *connection, int event, void *eve
 	{
         size_t i;
         struct http_message *http_data = (struct http_message *)event_data;
+        
         goat_object *obj = create_goat_object(me->allocator);
+        
         goat_object_add_record(me->allocator, obj, L"uri",
-            create_goat_string_from_c_string_ext(me->allocator, http_data->uri.p, http_data->uri.len));
+            create_goat_string_from_c_string_ext(
+                me->allocator, 
+                http_data->uri.p, 
+                http_data->uri.len
+            )
+        );
+        
         wchar_t method[16];
         for (i = 0; i < http_data->method.len; i++)
             method[i] = (wchar_t)tolower(http_data->method.p[i]);
         goat_object_add_record(me->allocator, obj, L"method",
-            create_goat_string_ext(me->allocator, method, http_data->method.len));
+            create_goat_string_ext(
+                me->allocator, 
+                method, 
+                http_data->method.len
+            )
+        );
+        
         goat_object_add_record(me->allocator, obj, L"queryString",
-            create_goat_string_from_c_string_ext(me->allocator, http_data->query_string.p, http_data->query_string.len));
+            create_goat_string_from_c_string_ext(
+                me->allocator,
+                http_data->query_string.p,
+                http_data->query_string.len
+            )
+        );
+        
         goat_object_add_record(me->allocator, obj, L"body",
-            create_goat_string_from_c_string_ext(me->allocator, http_data->body.p, http_data->body.len));
+            create_goat_string_from_c_string_ext(
+                me->allocator,
+                http_data->body.p,
+                http_data->body.len
+            )
+        );
+        
+        goat_object *headers = create_goat_object(me->allocator);
+        goat_object_add_record(me->allocator, obj, L"headers", &headers->base);
+        for (i = 0; i < MG_MAX_HTTP_HEADERS; i++)
+        {
+            if (http_data->header_names[i].len == 0)
+                break;
+            
+            goat_object_add_record_ext(
+                me->allocator,
+                headers,
+                false,
+                create_wide_string_from_string(
+                    me->allocator, 
+                    http_data->header_names[i].p, 
+                    http_data->header_names[i].len
+                ),
+                http_data->header_names[i].len,
+                create_goat_string_from_c_string_ext(
+                    me->allocator,
+                    http_data->header_values[i].p, 
+                    http_data->header_values[i].len
+                )
+            );
+        }
+
         goat_value * args[] = 
         {
             (goat_value*)obj
