@@ -55,8 +55,10 @@ static void event_handler(struct mg_connection *connection, int event, void *eve
             method[i] = (wchar_t)tolower(http_data->method.p[i]);
         goat_object_add_record(me->allocator, obj, L"method",
             create_goat_string_ext(me->allocator, method, http_data->method.len));
-        goat_object_add_record(me->allocator, obj, L"query",
+        goat_object_add_record(me->allocator, obj, L"queryString",
             create_goat_string_from_c_string_ext(me->allocator, http_data->query_string.p, http_data->query_string.len));
+        goat_object_add_record(me->allocator, obj, L"body",
+            create_goat_string_from_c_string_ext(me->allocator, http_data->body.p, http_data->body.len));
         goat_value * args[] = 
         {
             (goat_value*)obj
