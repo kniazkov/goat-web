@@ -78,8 +78,9 @@ static void event_handler(struct mg_connection *connection, int event, void *eve
         );
         
         goat_object_add_record(me->allocator, obj, L"body",
-            create_goat_string_from_c_string_ext(
+            create_goat_byte_array(
                 me->allocator,
+                false,
                 http_data->body.p,
                 http_data->body.len
             )
