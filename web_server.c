@@ -151,7 +151,7 @@ static void event_handler(struct mg_connection *connection, int event, void *eve
             {
                 mg_printf(connection, "%c", (char)content_type->value[i]);
             }
-            mg_printf(connection, "\r\nContent-Length: %d\r\n\r\n", content->length);
+            mg_printf(connection, "\r\nContent-Length: %lu\r\n\r\n", content->length);
             mg_printf(connection, "%s", (const char*)content->data);
         }
     }
