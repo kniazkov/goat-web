@@ -175,7 +175,6 @@ goat_value * create_server(const goat_shell *shell, const goat_allocator *alloca
     web_server_data *data = calloc(1, sizeof(web_server_data));
     data->callback = *((goat_function*)arg_list[1]);
     mg_mgr_init(&data->manager, data);
-    printf("Starting web server on port %ld\n", port);
     data->connection = mg_bind(&data->manager, port_str, event_handler, data);
     if (data->connection == NULL)
 	{
