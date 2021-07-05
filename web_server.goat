@@ -162,13 +162,16 @@ $()
                 for (var param in request.queryString.split('&'))
                 {
                     var pair = param.split('=');
-                    var key = pair[0];
-                    if (isUrlEncoded(key))
-                        key = decodeUrl(key);
-                    var value = pair[1];
-                    if (isUrlEncoded(value))
-                        value = decodeUrl(value);
-                    addParameter(key, value);
+                    if (pair.length() == 2)
+                    {
+                        var key = pair[0];
+                        if (isUrlEncoded(key))
+                            key = decodeUrl(key);
+                        var value = pair[1];
+                        if (isUrlEncoded(value))
+                            value = decodeUrl(value);
+                        addParameter(key, value);
+                    }
                 }
             }
 
